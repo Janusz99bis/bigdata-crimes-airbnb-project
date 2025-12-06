@@ -1,0 +1,34 @@
+# === Dane i duże pliki ===
+data/
+*/data/
+*.csv
+*.gz
+*.zip
+*.json
+*.parquet
+
+# === Środowisko Hadoop/HBase/NiFi lokalne ===
+/hadoop-3.*/
+hadoop/
+hbase/
+nifi-*
+spark-*
+kafka_*
+zookeeper/
+
+# === Logi i tymczasowe ===
+*.log
+logs/
+temp/
+tmp/
+*.tmp
+.DS_Store
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+
+# === Środowiska wirtualne ===
+env/
+venv/
+.venv/
