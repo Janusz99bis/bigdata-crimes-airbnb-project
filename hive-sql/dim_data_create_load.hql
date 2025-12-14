@@ -2,7 +2,6 @@
 -- 1. Tabela DimDate (Zaktualizowana o BOOLEAN)
 -- ============================================================
 DROP TABLE IF EXISTS dim_date;
-
 CREATE TABLE dim_date (
     date_key INT,
     date_str STRING,
@@ -26,7 +25,6 @@ OVERWRITE INTO TABLE dim_date;
 -- 2. Tabela DimHostResponseTime
 -- ============================================================
 DROP TABLE IF EXISTS dim_host_response_time;
-
 CREATE TABLE dim_host_response_time (
     response_time_key INT,
     response_time_desc STRING
@@ -44,7 +42,6 @@ OVERWRITE INTO TABLE dim_host_response_time;
 -- 3. Tabela DimRoomType
 -- ============================================================
 DROP TABLE IF EXISTS dim_room_type;
-
 CREATE TABLE dim_room_type (
     room_type_key INT,
     room_type_desc STRING
@@ -88,7 +85,7 @@ CREATE EXTERNAL TABLE airbnb_listings (
     bathrooms                       FLOAT,
     bedrooms                        FLOAT,
     beds                            INT,
-    price                           STRING,
+    price                           FLOAT,
     minimum_nights                  INT,
     maximum_nights                  INT,
     availability_30                 INT,
@@ -98,7 +95,7 @@ CREATE EXTERNAL TABLE airbnb_listings (
     number_of_reviews               INT,
     number_of_reviews_ltm           INT,
     number_of_reviews_l30d          INT,
-    estimated_revenue_l365d         STRING,
+    estimated_revenue_l365d         FLOAT,
     first_review_id                 INT,           -- klucz do dim_date
     last_review_id                  INT,           -- klucz do dim_date
     review_scores_rating            FLOAT,
