@@ -2,7 +2,7 @@
 <template encoding-version="1.3">
     <description></description>
     <groupId>17b58bb1-019b-1000-4be9-2b85f3796268</groupId>
-    <name>19:25 13.12.2025</name>
+    <name>airbnb_listings</name>
     <snippet>
         <connections>
             <id>0778f31c-8041-3da9-0000-000000000000</id>
@@ -1567,7 +1567,7 @@
   {"name":"bathrooms","type":["null","float"]},
   {"name":"bedrooms","type":["null","float"]},
   {"name":"beds","type":["null","int"]},
-  {"name":"price","type":["null","string"]},
+  {"name":"price","type":["null","float"]},
   {"name":"minimum_nights","type":["null","int"]},
   {"name":"maximum_nights","type":["null","int"]},
   {"name":"availability_30","type":["null","int"]},
@@ -1577,7 +1577,7 @@
   {"name":"number_of_reviews","type":["null","int"]},
   {"name":"number_of_reviews_ltm","type":["null","int"]},
   {"name":"number_of_reviews_l30d","type":["null","int"]},
-  {"name":"estimated_revenue_l365d","type":["null","string"]},
+  {"name":"estimated_revenue_l365d","type":["null","float"]},
   {"name":"first_review_id","type":["null","int"]},
   {"name":"last_review_id","type":["null","int"]},
   {"name":"review_scores_rating","type":["null","float"]},
@@ -2147,7 +2147,10 @@
   END AS bathrooms, 
   bedrooms,
   beds,
-  price,
+  CASE 
+   WHEN price LIKE 'null' THEN NULL
+   ELSE price 
+  END AS price,
   minimum_nights,
   maximum_nights,
   availability_30,
@@ -2157,7 +2160,10 @@
   number_of_reviews,
   number_of_reviews_ltm,
   number_of_reviews_l30d,
-  estimated_revenue_l365d,
+  CASE 
+   WHEN estimated_revenue_l365d LIKE 'null' THEN NULL
+   ELSE estimated_revenue_l365d 
+  END AS estimated_revenue_l365d,
   CASE WHEN first_review IS NULL THEN -1 ELSE first_review END AS first_review,
   CASE WHEN last_review  IS NULL THEN -1 ELSE last_review END AS last_review,
   review_scores_rating,
@@ -2451,7 +2457,7 @@ FROM FLOWFILE WHERE (host_name IS NOT NULL) LIMIT 200</value>
                     </entry>
                     <entry>
                         <key>Directory</key>
-                        <value>/user/vagrant/bigdata/processed/listings</value>
+                        <value>/user/vagrant/bigdata/processed/airbnb_listings</value>
                     </entry>
                     <entry>
                         <key>Conflict Resolution Strategy</key>
@@ -3785,6 +3791,12 @@ FROM FLOWFILE WHERE (host_name IS NOT NULL) LIMIT 200</value>
                         </value>
                     </entry>
                     <entry>
+                        <key>/estimated_revenue_l365d</key>
+                        <value>
+                            <name>/estimated_revenue_l365d</name>
+                        </value>
+                    </entry>
+                    <entry>
                         <key>/host_acceptance_rate</key>
                         <value>
                             <name>/host_acceptance_rate</name>
@@ -3868,6 +3880,10 @@ FROM FLOWFILE WHERE (host_name IS NOT NULL) LIMIT 200</value>
                     <entry>
                         <key>/bedrooms</key>
                         <value>${field.value:isEmpty():ifElse(0.0,${field.value})}</value>
+                    </entry>
+                    <entry>
+                        <key>/estimated_revenue_l365d</key>
+                        <value>${field.value:isNull():ifElse('null',${field.value:replace('$',''):replace(',','')})}</value>
                     </entry>
                     <entry>
                         <key>/host_acceptance_rate</key>
@@ -5071,5 +5087,5 @@ FROM FLOWFILE WHERE (host_name IS NOT NULL) LIMIT 200</value>
             <type>org.apache.nifi.processors.standard.LookupRecord</type>
         </processors>
     </snippet>
-    <timestamp>12/13/2025 18:26:00 UTC</timestamp>
+    <timestamp>12/14/2025 14:04:46 UTC</timestamp>
 </template>
