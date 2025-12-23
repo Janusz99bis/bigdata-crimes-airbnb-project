@@ -54,6 +54,79 @@ TBLPROPERTIES ("skip.header.line.count"="1");
 LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_room_type.csv' 
 OVERWRITE INTO TABLE dim_room_type;
 
+
+-- ============================================================
+-- 4. Tabela DimLawCatCD
+-- ============================================================
+DROP TABLE IF EXISTS dim_law_cat_cd;
+CREATE TABLE dim_law_cat_cd (
+    LAW_CAT_CD_key INT,
+    LAW_CAT_CD_code STRING,
+    LAW_CAT_CD_desc STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_LAW_CAT_CD.csv' 
+OVERWRITE INTO TABLE dim_law_cat_cd;
+
+
+-- ============================================================
+-- 5. Tabela DimJurisdictionCode
+-- ============================================================
+DROP TABLE IF EXISTS dim_jurisdiction_code;
+CREATE TABLE dim_jurisdiction_code (
+    JURISDICTION_CODE_key INT,
+    JURISDICTION_CODE_desc STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_JURISDICTION_CODE.csv' 
+OVERWRITE INTO TABLE dim_jurisdiction_code;
+
+
+-- ============================================================
+-- 6. Tabela DimArrestBoro
+-- ============================================================
+DROP TABLE IF EXISTS dim_arrest_boro;
+CREATE TABLE dim_arrest_boro (
+    ARREST_BORO_key INT,
+    ARREST_BORO_code STRING,
+    ARREST_BORO_desc STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_ARREST_BORO.csv' 
+OVERWRITE INTO TABLE dim_arrest_boro;
+
+
+-- ============================================================
+-- 7. Tabela DimAgeGroup
+-- ============================================================
+DROP TABLE IF EXISTS dim_age_group;
+CREATE TABLE dim_age_group (
+    age_group_key INT,
+    age_group_desc STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_age_group.csv' 
+OVERWRITE INTO TABLE dim_age_group;
+
+-- ============================================================
+-- 8. Tabela airbnb_listings
+-- ============================================================
 DROP TABLE IF EXISTS airbnb_listings;
 CREATE EXTERNAL TABLE airbnb_listings (
     id                              STRING,
@@ -124,3 +197,4 @@ CREATE EXTERNAL TABLE airbnb_listings (
 )
 STORED AS PARQUET
 LOCATION '/user/vagrant/bigdata/processed/airbnb_listings';
+

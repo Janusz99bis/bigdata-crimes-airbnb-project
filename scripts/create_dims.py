@@ -15,7 +15,7 @@ df["day_name"] = df["full_date"].dt.day_name()
 df["is_weekend"] = df["full_date"].dt.dayofweek.isin([5, 6])
 
 df = df.drop(columns=["full_date"])
-df.to_csv("dim_date_load.csv", index=False, header=True)
+df.to_csv("dim_date.csv", index=False, header=True)
 
 dim_host_response_time_data = {
     "response_time_key": [1, 2, 3, 4, 0, -1],
@@ -28,8 +28,6 @@ dim_host_response_time_data = {
         "Unknown",
     ],
 }
-dim_host_response_time_df = pd.DataFrame(dim_host_response_time_data)
-dim_host_response_time_df.to_csv("dim_host_response_time.csv", index=False, header=True)
 
 dim_room_type_data = {
     "room_type_key": [1, 2, 3, 4, -1],
@@ -41,5 +39,68 @@ dim_room_type_data = {
         "Unknown",
     ],
 }
+
+dim_LAW_CAT_CD_data = {
+    "LAW_CAT_CD_key": [1, 2, 3, -1],
+    "LAW_CAT_CD_code": ["F", "M", "V", "U"],
+    "LAW_CAT_CD_desc": [
+        "Felony",
+        "Misdemeanor",
+        "Violation",
+        "Unknown",
+    ],
+}
+
+dim_JURISDICTION_CODE_data = {
+    "JURISDICTION_CODE_key": [0, 1, 2, 3],
+    "JURISDICTION_CODE_desc": [
+        "NYPD Patrol",
+        "NYPD Transit",
+        "NYPD Housing",
+        "Non NYPD",
+    ],
+}
+
+dim_ARREST_BORO_data = {
+    "ARREST_BORO_key": [1, 2, 3, 4, 5, -1],
+    "ARREST_BORO_code": ["B", "K", "M", "Q", "S", "U"],
+    "ARREST_BORO_desc": [
+        "Bronx",
+        "Brooklyn",
+        "Manhattan",
+        "Queens",
+        "Staten Island",
+        "Unknown",
+    ],
+}
+
+# df_police_nyc['AGE_GROUP'].unique()
+dim_age_group_data = {
+    "AGE_GROUP_key": [1, 2, 3, 4, 5, -1],
+    "AGE_GROUP_desc": [
+        "<18",
+        "18-24",
+        "25-44",
+        "45-64",
+        "65+",
+        "Unknown",
+    ],
+}
+
+dim_host_response_time_df = pd.DataFrame(dim_host_response_time_data)
+dim_host_response_time_df.to_csv("dim_host_response_time.csv", index=False, header=True)
+
 dim_room_type_df = pd.DataFrame(dim_room_type_data)
 dim_room_type_df.to_csv("dim_room_type.csv", index=False, header=True)
+
+dim_LAW_CAT_CD_df = pd.DataFrame(dim_LAW_CAT_CD_data)
+dim_LAW_CAT_CD_df.to_csv("dim_LAW_CAT_CD.csv", index=False, header=True)
+
+dim_JURISDICTION_CODE_df = pd.DataFrame(dim_JURISDICTION_CODE_data)
+dim_JURISDICTION_CODE_df.to_csv("dim_JURISDICTION_CODE.csv", index=False, header=True)
+
+dim_ARREST_BORO_df = pd.DataFrame(dim_ARREST_BORO_data)
+dim_ARREST_BORO_df.to_csv("dim_ARREST_BORO.csv", index=False, header=True)
+
+dim_age_group_df = pd.DataFrame(dim_age_group_data)
+dim_age_group_df.to_csv("dim_age_group.csv", index=False, header=True)
