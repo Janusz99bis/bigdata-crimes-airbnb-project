@@ -1,0 +1,62 @@
+# Konfiguracja HBase by działał w standalone mode i replikował
+cd $HBASE_HOME/conf
+sudo nano hbase-site.xml
+
+# zmieniń konfiguracje
+<configuration>
+        <property>
+                <name>hbase.rootdir</name>
+                <value>hdfs://node1/user/hbase</value>
+        </property>
+        <property>
+                <name>hbase.zookeeper.property.dataDir</name>
+                <value>hdfs://node1/user/zookeeper</value>
+        </property>
+        <property>
+                <name>hbase.zookeeper.quorum</name>
+                <value>localhost</value>
+        </property>
+        <property>
+                <name>hbase.cluster.distributed</name>
+                <value>false</value>
+        </property>
+        <property>
+                <name>hbase.replication</name>
+                <value>true</value>
+        </property>
+</configuration>
+
+# Edytuj conf/hbase-env.sh
+# znajdź ścieżkę do Java
+readlink -f $(which java) | sed "s:/bin/java::"
+
+sudo nano hbase-env.sh
+
+    # Set Java home
+    export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64  # Adjust to your Java path
+
+    # Set HBase to manage its own ZooKeeper
+    export HBASE_MANAGES_ZK=true
+
+    # Set log directory
+    export HBASE_LOG_DIR=${HBASE_HOME}/logs
+
+# Utwórz katalogi w katalogu domyślnym
+cd
+mkdir -p ~/hbase-data
+mkdir -p ~/zookeeper-data
+
+# odpal HBase
+cd $HBASE_HOME
+bin/start-hbase.sh
+
+# odpal HBase shell
+hbase shell
+
+# Tworzenie tabeli
+create 'police_events', 
+  {NAME => 'common', VERSIONS => 1, COMPRESSION => 'SNAPPY', DATA_BLOCK_ENCODING => 'FAST_DIFF'}, 
+  {NAME => 'source_specific', VERSIONS => 1, COMPRESSION => 'SNAPPY', DATA_BLOCK_ENCODING => 'FAST_DIFF'}, 
+  {NAME => 'metadata', VERSIONS => 1, COMPRESSION => 'SNAPPY'}
+
+
