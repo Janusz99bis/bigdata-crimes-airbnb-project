@@ -87,6 +87,60 @@ dim_age_group_data = {
     ],
 }
 
+# array(['Offender given a caution', 'Under investigation',
+#        'Investigation complete; no suspect identified',
+#        'Unable to prosecute suspect', nan, 'Awaiting court outcome',
+#        'Further investigation is not in the public interest',
+#        'Local resolution', 'Action to be taken by another organisation',
+#        'Further action is not in the public interest'], dtype=object)
+dim_outcome_category_data = {
+    "outcome_category_key": [1, 2, 3, 4, 5, 6, 7, 8, 9, -1],
+    "outcome_category_desc": [
+        "Offender given a caution",
+        "Under investigation",
+        "Investigation complete; no suspect identified",
+        "Unable to prosecute suspect",
+        "Awaiting court outcome",
+        "Further investigation is not in the public interest",
+        "Local resolution",
+        "Action to be taken by another organisation",
+        "Further action is not in the public interest",
+        "Unknown",
+    ],
+}
+
+# array(['Other crime', 'Drugs', 'Criminal damage and arson',
+#        'Theft from the person', 'Burglary', 'Other theft',
+#        'Bicycle theft', 'Violence and sexual offences',
+#        'Anti-social behaviour', 'Public order', 'Shoplifting', 'Robbery',
+#        'Vehicle crime', 'Possession of weapons'], dtype=object)
+dim_crime_type_data = {
+    "crime_type_key": list(range(1, 15)) + [-1],
+    "crime_type_desc": [
+        "Other crime",
+        "Drugs",
+        "Criminal damage and arson",
+        "Theft from the person",
+        "Burglary",
+        "Other theft",
+        "Bicycle theft",
+        "Violence and sexual offences",
+        "Anti-social behaviour",
+        "Public order",
+        "Shoplifting",
+        "Robbery",
+        "Vehicle crime",
+        "Possession of weapons",
+        "Unknown",
+    ],
+}
+
+dim_crime_type_df = pd.DataFrame(dim_crime_type_data)
+dim_crime_type_df.to_csv("dim_crime_type.csv", index=False, header=True)
+
+dim_outcome_category_df = pd.DataFrame(dim_outcome_category_data)
+dim_outcome_category_df.to_csv("dim_outcome_category.csv", index=False, header=True)
+
 dim_host_response_time_df = pd.DataFrame(dim_host_response_time_data)
 dim_host_response_time_df.to_csv("dim_host_response_time.csv", index=False, header=True)
 

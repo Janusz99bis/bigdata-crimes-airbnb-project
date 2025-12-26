@@ -124,8 +124,43 @@ TBLPROPERTIES ("skip.header.line.count"="1");
 LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_age_group.csv' 
 OVERWRITE INTO TABLE dim_age_group;
 
+
 -- ============================================================
--- 8. Tabela airbnb_listings
+-- 8. Tabela DimCrimeType
+-- ============================================================
+DROP TABLE IF EXISTS dim_crime_type;
+CREATE TABLE dim_crime_type (
+    crime_type_key INT,
+    crime_type_desc STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_crime_type.csv' 
+OVERWRITE INTO TABLE dim_crime_type;
+
+
+-- ============================================================
+-- 9. Tabela DimOutcomeCategory
+-- ============================================================
+DROP TABLE IF EXISTS dim_outcome_category;
+CREATE TABLE dim_outcome_category (
+    outcome_category_key INT,
+    outcome_category_desc STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+TBLPROPERTIES ("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_outcome_category.csv' 
+OVERWRITE INTO TABLE dim_outcome_category;
+
+
+-- ============================================================
+-- 10. Tabela airbnb_listings
 -- ============================================================
 DROP TABLE IF EXISTS airbnb_listings;
 CREATE EXTERNAL TABLE airbnb_listings (
