@@ -1,0 +1,13 @@
+cd ~/bigdata-project/jars
+mkdir -p ~/bigdata-project/jars
+
+# Download shc (Spark-HBase Connector)
+wget https://repo1.maven.org/maven2/com/hortonworks/shc-core/1.1.3-2.4-s_2.11/shc-core-1.1.3-2.4-s_2.11.jar
+
+# Or use HBase native connector (alternative)
+# Note: You might already have these in $HBASE_HOME/lib/
+cp $HBASE_HOME/lib/hbase-client-*.jar ~/bigdata-crimes-airbnb-project-dir/jars
+cp $HBASE_HOME/lib/hbase-common-*.jar ~/bigdata-crimes-airbnb-project-dir/jars
+cp $HBASE_HOME/lib/hbase-protocol-*.jar ~/bigdata-crimes-airbnb-project-dir/jars
+cp $HBASE_HOME/lib/hbase-server-*.jar ~/bigdata-crimes-airbnb-project-dir/jars
+
