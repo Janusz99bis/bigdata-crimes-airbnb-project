@@ -9,10 +9,10 @@ def test_connection():
         connection = happybase.Connection("localhost", port=9090)
         connection.tables()
         connection.close()
-        print("✅ Test 1 PASSED: HBase connection successful")
+        print("[OK] Test 1 PASSED: HBase connection successful")
         return True
     except Exception as e:
-        print(f"❌ Test 1 FAILED: {e}")
+        print(f"[FAIL] Test 1 FAILED: {e}")
         return False
 
 
@@ -22,10 +22,10 @@ def test_list_tables():
         connection = happybase.Connection("localhost", port=9090)
         tables = [t.decode() for t in connection.tables()]
         connection.close()
-        print(f"✅ Test 2 PASSED: Found tables: {tables}")
+        print(f"[OK] Test 2 PASSED: Found tables: {tables}")
         return "police_events" in tables
     except Exception as e:
-        print(f"❌ Test 2 FAILED: {e}")
+        print(f"[FAIL] Test 2 FAILED: {e}")
         return False
 
 
@@ -47,10 +47,10 @@ def test_write_record():
 
         table.put(row_key.encode(), data)
         connection.close()
-        print("✅ Test 3 PASSED: Record written")
+        print("[OK] Test 3 PASSED: Record written")
         return True
     except Exception as e:
-        print(f"❌ Test 3 FAILED: {e}")
+        print(f"[FAIL] Test 3 FAILED: {e}")
         return False
 
 
@@ -65,13 +65,13 @@ def test_read_record():
         connection.close()
 
         if row:
-            print(f"✅ Test 4 PASSED: Record retrieved: {row}")
+            print(f"[OK] Test 4 PASSED: Record retrieved: {row}")
             return True
         else:
-            print("❌ Test 4 FAILED: Record not found")
+            print("[FAIL] Test 4 FAILED: Record not found")
             return False
     except Exception as e:
-        print(f"❌ Test 4 FAILED: {e}")
+        print(f"[FAIL] Test 4 FAILED: {e}")
         return False
 
 
@@ -87,10 +87,10 @@ def test_scan_table():
             print(f"  Row: {key.decode()}")
 
         connection.close()
-        print(f"✅ Test 5 PASSED: Scanned {count} records")
+        print(f"[OK] Test 5 PASSED: Scanned {count} records")
         return True
     except Exception as e:
-        print(f"❌ Test 5 FAILED: {e}")
+        print(f"[FAIL] Test 5 FAILED: {e}")
         return False
 
 
@@ -103,15 +103,15 @@ def test_delete_record():
         row_key = f"TEST#dr5ru#NYC#999999"
         table.delete(row_key.encode())
         connection.close()
-        print("✅ Test 6 PASSED: Test record deleted")
+        print("[OK] Test 6 PASSED: Test record deleted")
         return True
     except Exception as e:
-        print(f"❌ Test 6 FAILED: {e}")
+        print(f"[FAIL] Test 6 FAILED: {e}")
         return False
 
 
 if __name__ == "__main__":
-    print("🧪 Running HBase Functional Tests\n")
+    print("[TEST] Running HBase Functional Tests\n")
 
     tests = [
         test_connection,
@@ -128,4 +128,4 @@ if __name__ == "__main__":
             passed += 1
         print()
 
-    print(f"\n📊 Results: {passed}/{len(tests)} tests passed")
+    print(f"\n[RESULTS] {passed}/{len(tests)} tests passed")
