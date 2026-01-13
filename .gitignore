@@ -16,6 +16,10 @@ spark-*
 kafka_*
 zookeeper/
 
+# === Project Spark notebooks ===
+!spark-batch/
+!spark-batch/*.ipynb
+
 # === Logi i tymczasowe ===
 *.log
 logs/
