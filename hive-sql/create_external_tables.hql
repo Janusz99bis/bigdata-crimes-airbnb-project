@@ -1,13 +1,13 @@
 -- ===============================
--- BIG DATA PROJECT – HIVE LAYER
--- External tables over Spark Parquet
+-- BIG DATA PROJECT — HIVE LAYER
+-- External tables over Spark Parquet (HDFS)
 -- ===============================
 
 CREATE DATABASE IF NOT EXISTS bigdata;
 USE bigdata;
 
 -- ===============================
--- AIRBNB CLEANED
+-- AIRBNB CLEANED (Parquet)
 -- ===============================
 DROP TABLE IF EXISTS airbnb_cleaned;
 
@@ -34,8 +34,9 @@ CREATE EXTERNAL TABLE airbnb_cleaned (
 STORED AS PARQUET
 LOCATION '/user/vagrant/bigdata/processed/airbnb_cleaned';
 
+
 -- ===============================
--- POLICE UNIFIED
+-- POLICE UNIFIED (Parquet)
 -- ===============================
 DROP TABLE IF EXISTS police_unified;
 
@@ -53,8 +54,10 @@ CREATE EXTERNAL TABLE police_unified (
 STORED AS PARQUET
 LOCATION '/user/vagrant/bigdata/processed/police_unified';
 
+
 -- ===============================
--- LISTINGS WITH POLICE STATS
+-- LISTINGS WITH POLICE STATS (Parquet)
+-- FIX: counts must be BIGINT (Spark count() -> LongType)
 -- ===============================
 DROP TABLE IF EXISTS listings_with_police_stats;
 
@@ -78,19 +81,20 @@ CREATE EXTERNAL TABLE listings_with_police_stats (
   host_response_rate FLOAT,
   host_acceptance_rate FLOAT,
 
-  crime_events_total INT,
-  crime_events_distinct INT,
-  crime_types_distinct INT,
+  crime_events_total BIGINT,
+  crime_events_distinct BIGINT,
+  crime_types_distinct BIGINT,
   top_crime_desc STRING,
-  top_crime_desc_count INT,
+  top_crime_desc_count BIGINT,
   safety_index DOUBLE,
   crime_bucket STRING
 )
 STORED AS PARQUET
 LOCATION '/user/vagrant/bigdata/analytical/listings_with_police_stats';
 
+
 -- ===============================
--- NEIGHBOURHOOD / LSOA STATS
+-- NEIGHBOURHOOD / LSOA STATS (Parquet)
 -- ===============================
 DROP TABLE IF EXISTS neighbourhood_stats;
 
@@ -106,17 +110,20 @@ CREATE EXTERNAL TABLE neighbourhood_stats (
   median_crimes_nearby DOUBLE,
   avg_safety_index DOUBLE,
   median_safety_index DOUBLE,
+
   bucket_0_cnt BIGINT,
   bucket_1_5_cnt BIGINT,
   bucket_6_20_cnt BIGINT,
   bucket_21p_cnt BIGINT,
+
   crimes_per_100_listings DOUBLE
 )
 STORED AS PARQUET
 LOCATION '/user/vagrant/bigdata/analytical/neighbourhood_stats';
 
+
 -- ===============================
--- CITY COMPARISONS
+-- CITY COMPARISONS (Parquet)
 -- ===============================
 DROP TABLE IF EXISTS city_comparisons;
 
@@ -131,17 +138,40 @@ CREATE EXTERNAL TABLE city_comparisons (
   median_crimes_nearby DOUBLE,
   avg_safety_index DOUBLE,
   median_safety_index DOUBLE,
+
   bucket_0_cnt BIGINT,
   bucket_1_5_cnt BIGINT,
   bucket_6_20_cnt BIGINT,
   bucket_21p_cnt BIGINT,
+
   bucket_0_pct DOUBLE,
   bucket_1_5_pct DOUBLE,
   bucket_6_20_pct DOUBLE,
   bucket_21p_pct DOUBLE,
+
   corr_price_vs_crime DOUBLE,
   corr_rating_vs_crime DOUBLE,
   corr_price_vs_safety DOUBLE
 )
 STORED AS PARQUET
 LOCATION '/user/vagrant/bigdata/analytical/city_comparisons';
+
+
+-- ===============================
+-- (OPTIONAL) POLICE GEOHASH AGG (Parquet)
+-- Jeśli chcesz mieć SQL nad tym agregatem
+-- ===============================
+DROP TABLE IF EXISTS police_geohash_agg;
+
+CREATE EXTERNAL TABLE police_geohash_agg (
+  city_code STRING,
+  geohash5 STRING,
+  crime_events_total BIGINT,
+  crime_events_distinct BIGINT,
+  crime_types_distinct BIGINT,
+  top_crime_desc STRING,
+  top_crime_desc_count BIGINT
+)
+STORED AS PARQUET
+LOCATION '/user/vagrant/bigdata/analytical/police_geohash_agg';
+
