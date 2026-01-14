@@ -140,7 +140,7 @@ def main():
     assert_range(airbnb, "airbnb_cleaned", "longitude_d", -180.0, 180.0)
     assert_geohash_len(airbnb, "airbnb_cleaned", "geohash5", 5)
 
-    # joined: crime fields should be not null (u Ciebie robiłeś coalesce do 0)
+    # joined: crime fields should be not null
     assert_no_nulls(joined, "listings_with_police_stats", ["id", "city_code", "geohash5", "crime_events_total", "safety_index", "crime_bucket"])
     assert_geohash_len(joined, "listings_with_police_stats", "geohash5", 5)
 
@@ -155,7 +155,7 @@ def main():
     ok("T04: jakość danych OK")
 
     # ---------- T05: Join logic checks ----------
-    # 1) join output should have same number of rows as airbnb (left join on listings)
+    # 1) join output should have same number of rows as airbnb
     if joined_n != airbnb_n:
         print(f"[WARN] joined rows ({joined_n}) != airbnb rows ({airbnb_n}). "
               f"To może być OK, jeśli po drodze filtrowałeś listingi.")

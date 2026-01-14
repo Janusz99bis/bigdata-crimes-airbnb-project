@@ -82,7 +82,6 @@ print("✅ Connected to Kafka topic: police-stream")
 kafka_df = kafka_df.selectExpr("CAST(value AS STRING) as json_string")
 
 # Parse JSON to get city_code field
-# We'll use a temporary schema to extract city_code first
 temp_schema = StructType(
     [
         StructField("city_code", StringType(), True),
@@ -202,7 +201,7 @@ def write_batch_to_hbase(batch_df, batch_id):
                         b"common:geohash": geohash.encode(),
                         b"common:city_code": city.encode(),
                         b"common:data_source": source.encode(),
-                        b"common:crime_category": b"UNKNOWN",  # Will add mapping later
+                        b"common:crime_category": b"UNKNOWN",
                     }
 
                     # Add city-specific columns
@@ -256,7 +255,7 @@ def write_batch_to_hbase(batch_df, batch_id):
                                 else b"",
                             }
                         )
-                    elif city in ["LON", "BRS"]:  # London or Bristol
+                    elif city in ["LON", "BRS"]:
                         data.update(
                             {
                                 b"source_specific:crime_id": (

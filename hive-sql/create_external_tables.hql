@@ -1,5 +1,4 @@
 -- ===============================
--- BIG DATA PROJECT — HIVE LAYER
 -- External tables over Spark Parquet (HDFS)
 -- ===============================
 
@@ -57,7 +56,6 @@ LOCATION '/user/vagrant/bigdata/processed/police_unified';
 
 -- ===============================
 -- LISTINGS WITH POLICE STATS (Parquet)
--- FIX: counts must be BIGINT (Spark count() -> LongType)
 -- ===============================
 DROP TABLE IF EXISTS listings_with_police_stats;
 
@@ -158,8 +156,7 @@ LOCATION '/user/vagrant/bigdata/analytical/city_comparisons';
 
 
 -- ===============================
--- (OPTIONAL) POLICE GEOHASH AGG (Parquet)
--- Jeśli chcesz mieć SQL nad tym agregatem
+-- POLICE GEOHASH AGG (Parquet)
 -- ===============================
 DROP TABLE IF EXISTS police_geohash_agg;
 

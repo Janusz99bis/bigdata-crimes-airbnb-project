@@ -1,5 +1,5 @@
 -- ============================================================
--- 1. Tabela DimDate (Zaktualizowana o BOOLEAN)
+-- 1. Tabela DimDate
 -- ============================================================
 DROP TABLE IF EXISTS dim_date;
 CREATE TABLE dim_date (
@@ -9,14 +9,13 @@ CREATE TABLE dim_date (
     month INT,
     day INT,
     day_name STRING,
-    is_weekend BOOLEAN  -- Teraz używamy poprawnego typu
+    is_weekend BOOLEAN
 )
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
 TBLPROPERTIES ("skip.header.line.count"="1");
 
--- Ładowanie danych
 LOAD DATA INPATH '/user/vagrant/bigdata/dimensions/dim_date.csv' 
 OVERWRITE INTO TABLE dim_date;
 

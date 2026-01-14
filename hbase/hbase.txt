@@ -1,8 +1,7 @@
-# Konfiguracja HBase by działał w standalone mode i replikował
+# Konfiguracja HBase
 cd $HBASE_HOME/conf
 sudo nano hbase-site.xml
 
-# zmieniń konfiguracje
 <configuration>
         <property>
                 <name>hbase.rootdir</name>
@@ -26,8 +25,6 @@ sudo nano hbase-site.xml
         </property>
 </configuration>
 
-# Edytuj conf/hbase-env.sh
-# znajdź ścieżkę do Java
 readlink -f $(which java) | sed "s:/bin/java::"
 
 sudo nano hbase-env.sh
@@ -41,18 +38,14 @@ sudo nano hbase-env.sh
     # Set log directory
     export HBASE_LOG_DIR=${HBASE_HOME}/logs
 
-# Utwórz katalogi w katalogu domyślnym
 cd
 mkdir -p ~/hbase-data
 mkdir -p ~/zookeeper-data
 
-# odpal HBase
 cd $HBASE_HOME
 bin/start-hbase.sh
 
-# odpal HBase shell
 hbase shell
 
-# Tworzenie tabeli
 create 'police_events', {NAME => 'common', VERSIONS => 1, DATA_BLOCK_ENCODING => 'FAST_DIFF'}, {NAME => 'source_specific', VERSIONS => 1, DATA_BLOCK_ENCODING => 'FAST_DIFF'}, {NAME => 'metadata', VERSIONS => 1}
 
