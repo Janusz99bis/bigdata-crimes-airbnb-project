@@ -1,148 +1,278 @@
-This project establishes a hybrid Big Data engineering pipeline designed to ingest, process, and analyze the spatial correlation between short-term rental activities (Airbnb) and public safety indicators (crime and arrest metadata) across two major metropolitan areas: **London** and **New York City (NYC)**.
+# Big Data: Airbnb & Crime Analysis — London & New York City
+---
 
-The system implements a unified spatial join over a distributed environment to determine how short-term tourism densities overlap with regional crime patterns. This analytical framework is built to support data-driven decision-making for municipal administrators, real estate investors, law enforcement allocation, and travel platforms.
+## Overview
+
+This project builds a hybrid Big Data pipeline to ingest, process, and analyse the spatial relationship between short-term rental activity (Airbnb) and public safety data (crime/arrest records) in **London** and **New York City**.
+
+The goal is to determine whether areas of high Airbnb density correlate with elevated crime intensity at the neighbourhood level — a question relevant to city administrators, law enforcement, real-estate investors, and travel platforms.
+
+The system combines **batch processing** (Airbnb listings) with a **simulated streaming layer** (police data routed through Kafka), all running on a single-node Hadoop environment while preserving a typical multi-layer Big Data architecture.
 
 ---
 
-## Architecture Diagram
-
-The architecture combines a **Batch Layer** for housing asset distributions and a simulated **Streaming Layer** for real-time policy event delivery, feeding into a unified **Serving Layer** for multi-dimensional SQL querying.
+## Architecture
 
 ```
-                [ Inside Airbnb ]               [ NYC Open Data ]       [ data.police.uk ]
-                       │                                │                        │
-                (Batch Ingest)                    (Socrata API)            (Local Source)
-                       │                                │                        │
-                       ▼                                ▼                        ▼
-               ┌───────────────┐               ┌──────────────────────────────────────────┐
-               │  Apache NiFi  │               │               Apache NiFi                │
-               │ (Raw Ingest)  │               │      (Validation, Avro & Streaming)      │
-               └───────┬───────┘               └────────────────────┬─────────────────────┘
-                       │                                            │
-                       ▼ (Direct Write)                             ▼ (Event-Time Routing)
-               ┌───────────────┐                            ┌─────────────────────────────┐
-               │  HDFS Layer   │                            │        Apache Kafka         │
-               │    (/raw)     │                            │    Topic: police-stream     │
-               └───────┬───────┘                            └──────────────┬──────────────┘
-                       │                                                   │
-                       │                                                   ▼ (Structured Streaming)
-                       │                                            ┌─────────────────────────────┐
-                       │                                            │        Apache Spark         │
-                       │                                            │     (Schema Unification)     │
-                       │                                            └──────────────┬──────────────┘
-                       │                                                           │
-                       ▼                                                           ▼
-         ┌───────────────────────────┐                               ┌─────────────────────────────┐
-         │       Apache Spark        │◄──────────────────────────────┤        Apache HBase         │
-         │  (Batch Execution Layer)  │   (Spatial Join via Geohash)  │  Namespace: `bigdata:cf_*`  │
-         └─────────────┬─────────────┘                               └──────────────┬──────────────┘
-                       │                                                           │
-                       ▼ (Parquet Format)                                          │
-               ┌───────────────┐                                                   │
-               │  HDFS Layer   │                                                   │
-               │ (/analytical) │                                                   │
-               └───────┬───────┘                                                   │
-                       │                                                           │
-                       ▼                                                           ▼
-               ┌──────────────────────────────────────────────────────────────────────────┐
-               │                               Apache Hive                                │
-               │               (External Tables & Hive-HBase Connector)                   │
-               └───────────────────────────────────┬──────────────────────────────────────┘
-                                                   │
-                                                   ▼
-                                       ┌──────────────────────┐
-                                       │     Visualizations   │
-                                       │  (Folium / Heatmaps) │
-                                       └──────────────────────┘
-
+[ Inside Airbnb ]          [ NYC Open Data ]       [ data.police.uk ]
+       │                          │                        │
+  (Batch CSV)               (Socrata API)            (Local CSV)
+       │                          └──────────┬─────────────┘
+       ▼                                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        Apache NiFi                          │
+│  Ingest · Validation · Avro conversion · Stream simulation  │
+└──────────────────┬──────────────────────────────────────────┘
+                   │                          │
+            (Direct write)             (Event-time routing)
+                   ▼                          ▼
+           ┌──────────────┐         ┌──────────────────────┐
+           │     HDFS     │         │     Apache Kafka      │
+           │   /raw/…     │         │  topic: police-stream │
+           └──────┬───────┘         └──────────┬───────────┘
+                  │                             │
+                  │                     (Structured Streaming)
+                  │                             ▼
+                  │                  ┌──────────────────────┐
+                  │                  │     Apache Spark      │
+                  │                  │  Schema unification   │
+                  │                  └──────────┬───────────┘
+                  │                             │
+                  │                             ▼
+                  │                  ┌──────────────────────┐
+                  │                  │     Apache HBase      │
+                  │◄─────────────────┤  bigdata:police_events│
+                  │  (Geohash join)  └──────────────────────┘
+                  ▼
+        ┌──────────────────┐
+        │   Apache Spark   │  ← Batch: clean · join · aggregate
+        │   (Batch Layer)  │
+        └────────┬─────────┘
+                 │  Parquet
+                 ▼
+        ┌──────────────────┐
+        │  HDFS /analytical│
+        └────────┬─────────┘
+                 ▼
+        ┌──────────────────┐
+        │   Apache Hive    │  ← External tables · SQL analytics
+        └────────┬─────────┘
+                 ▼
+        ┌──────────────────┐
+        │  Visualizations  │  ← Folium heatmaps · choropleth maps
+        └──────────────────┘
 ```
 
 ---
 
-## Core Technologies
+## Repository Structure
 
-**Ingest & Preprocessing:** [Apache NiFi v1.23+](cite: 47) — Orchestrates raw data fetches, handles GZIP extraction, performs early field mutation (currency stripping, formatting, and pagination), and converts inputs into structured Avro streams.
+```
+bigdata-crimes-airbnb-project/
+├── nifi-templates/          # Exported NiFi flow templates (Airbnb, NYPD, UKPD)
+├── spark-batch/             # PySpark batch notebooks & jobs
+│   ├── 1_Airbnb_cleaned+geohash.ipynb
+│   ├── 2_police_unified.ipynb
+│   ├── 3_listings_with_police_stats.ipynb
+│   └── 4_neighbourhood_stats.ipynb
+├── notebooks/               # Jupyter / Zeppelin exploration notebooks
+├── hive-sql/                # HiveQL DDL and analytical queries (.hql)
+├── hbase/                   # HBase schema setup and test scripts
+├── kafka/                   # Kafka topic configuration
+├── scripts/                 # Data download helpers
+│   ├── download_airbnb.sh
+│   ├── download_police_uk.py
+│   └── download_nyc_api.py
+├── tests/                   # Functional test suites
+│   ├── test_spark_pipeline.py
+│   ├── hive_functional_tests.hql
+│   └── hbase_test.py
+├── visualizations/          # Folium map notebooks and screenshots
+├── environment.yml          # Conda environment definition
+├── .gitignore               # Excludes data/ directory from version control
+└── bigdata_report.pdf       # Full project report (Polish)
+```
 
-**Message Broker:** [Apache Kafka](cite: 48) — Manages the real-time event pipeline stream via the `police-stream` topic, isolating input workloads from processing nodes.
-
-**Distributed Compute Engine:** [Apache Spark v3.x](cite: 53) — Handled downstream execution through **Spark Structured Streaming** for continuous ingestion into NoSQL storage and **Spark Batch** for running dimensional data alignment and spatial joins.
-
-**NoSQL Storage Layer:** [Apache HBase](cite: 51) — Stores unified stream outputs under dynamic column families, indexed heavily via composite row keys to facilitate sub-second geographic ranges scans.
-
-**Data Lake Warehouse:** [Hadoop Distributed File System (HDFS)](cite: 50) — Houses raw, standardized, and aggregated analytical files serialized into columnar Apache Parquet configurations.
-
-**Analytical Engine:** [Apache Hive](cite: 55) — Provides schema-on-read abstractions using managed external definitions overlaid on top of HDFS nodes and maps HBase tables natively via the `Hive-HBase-Connector`.
-
-
----
-
-## Data Repositories & Engine Schemas
-
-### 1. Inside Airbnb (Batch Target)
-
-**Source:** [Inside Airbnb Portal](https://insideairbnb.com/get-the-data/) 
-**Profiles Ingested:** London (June 2025 Snapshots) & New York City (November 2025 Snapshots) 
-**Target Storage:** HDFS `/processed/airbnb_cleaned` via columnar Parquet.
-**Attributes:** Includes unique identifier strings (`id`), geographical coordinate locations (`latitude`/`longitude`), pricing floats (`price`), spatial bounds (`neighbourhood_cleansed`), property/room classifications, and review tracking parameters.
-
-### 2. Public Safety Datasets (Simulated Streams)
-
-**UK Police Data:** Extracted from [data.police.uk](https://data.police.uk/data/), monitoring crime incidents registered by the Metropolitan Police Service across Greater London.
-**NYPD Arrest Data:** Real-time collection executed over the [NYC Open Data Socrata API](https://data.cityofnewyork.us/resource/uip8-fykc.json), collecting physical booking events tracked during equivalent reporting intervals.
-**Target Broker Layer:** Kafka `police-stream`.
+> **Note:** The `data/` directory is excluded from version control via `.gitignore`. All raw and processed datasets live exclusively in HDFS.
 
 ---
 
-## Deployment & Setup Instructions
+## Data Sources
 
-### Step 1: Initialize the Distributed Environment
+| Source | City | Format | Records | Update frequency |
+|---|---|---|---|---|
+| [Inside Airbnb](https://insideairbnb.com/get-the-data/) | London (Jun 2025), NYC (Nov 2025) | CSV + GeoJSON | ~96k (LON) | Every 3–4 months |
+| [data.police.uk](https://data.police.uk/data/) | London (Jun 2025) | CSV | ~100k | Monthly |
+| [NYC Open Data — NYPD Arrests](https://data.cityofnewyork.us/Public-Safety/NYPD-Arrest-Data-Year-to-Date-) | New York City (2025 YTD) | CSV / JSON | ~212k | Daily |
 
-Construct the required directory structures inside HDFS and apply secure permission masks to authorize multi-agent read/write executions:
+---
+
+## Technology Stack
+
+| Layer | Technology | Role |
+|---|---|---|
+| Ingest & preprocessing | Apache NiFi | HTTP fetch, GZIP extraction, Avro conversion, Kafka routing |
+| Message broker | Apache Kafka | Simulated streaming via `police-stream` topic |
+| Distributed storage | HDFS / Hadoop | Raw, processed, and analytical Parquet files |
+| NoSQL storage | Apache HBase | Unified police events indexed by `date#geohash#city#event_id` |
+| Batch & stream processing | Apache Spark | Schema unification, geohash spatial joins, aggregations |
+| SQL analytics | Apache Hive | External tables over HDFS Parquet + Hive-HBase connector |
+| Visualisation | Python / Folium | Interactive heatmaps and choropleth district maps |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Hadoop / HDFS running locally (single-node pseudo-distributed)
+- Apache NiFi, Kafka, Spark, HBase, and Hive installed and configured
+- Python 3.x with the Conda environment from `environment.yml`
 
 ```bash
-hdfs dfs -mkdir -p /user/$USER/bigdata/{raw/{airbnb,police_uk,police_nyc},processed/{airbnb_clean,police_events,geo},analytical/{agg_neighbourhood,agg_geohash,reports}}
-hdfs dfs -chmod -R 755 /user/$USER/bigdata
-
+conda env create -f environment.yml
+conda activate bigdata
 ```
 
-### Step 2: Establish HBase Tables
-Launch the HBase interactive shell to provision the core analytical storage tables:
+### 1. Initialise HDFS directories
+
+```bash
+hdfs dfs -mkdir -p /user/$USER/bigdata/{raw/{airbnb,police_uk,police_nyc},\
+processed/{airbnb_clean,police_events,geo},\
+analytical/{agg_neighbourhood,agg_geohash,reports}}
+hdfs dfs -chmod -R 755 /user/$USER/bigdata
+```
+
+### 2. Create HBase table
 
 ```bash
 hbase shell
-create 'bigdata:police_events', 'cf_common', 'cf_uk', 'cf_nyc'
-
+> create 'bigdata:police_events', 'cf_common', 'cf_uk', 'cf_nyc'
 ```
 
-### Step 3: Run the Pipeline Components
-
-1. 
-**Apache NiFi:** Import the templates located under `nifi-templates/` into the user interface canvas and start the processor groups to begin ingesting the data.
-
-2. 
-**Streaming Processing:** Launch the Spark Structured Streaming application to start processing incoming Kafka event records.
-
-3. 
-**Batch Processing:** Run the pipeline notebooks sequentially to extract features, clean data, and execute the spatial joins:
-
+### 3. Download source data
 
 ```bash
-spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0 spark-jobs/process_airbnb_batch.py
-
+bash scripts/download_airbnb.sh
+python scripts/download_police_uk.py
+python scripts/download_nyc_api.py
 ```
 
+### 4. Start NiFi flows
+
+Import the templates from `nifi-templates/` into the NiFi UI and start the three processor groups:
+- `Airbnb_Ingest_Flow` — batch ingest to HDFS
+- `NYPD_Stream_Flow` — NYC arrests → Kafka
+- `UKPD_Stream_Flow` — London crimes → Kafka
+
+### 5. Run Spark batch pipeline
+
+```bash
+spark-submit tests/test_spark_pipeline.py   # optional smoke test first
+```
+
+Then run the notebooks in order (1 → 4) from `spark-batch/`.
+
+### 6. Register Hive external tables
+
+```bash
+hive -f hive-sql/create_external_tables.hql
+```
+
+### 7. Generate visualisations
+
+Run the notebooks in `visualizations/` to produce the heatmap and choropleth maps.
+
+---
+
+## Key Analytical Results
+
+All analyses used a random sample of 200 Airbnb listings per city for performance reasons in a single-node environment.
+
+### Price comparison
+
+| City | Avg. price/night | Median price/night |
+|---|---|---|
+| London | £153.23 | £105.00 |
+| New York City | $210.05 | $149.80 |
+
+### Crime intensity around listings
+
+| City | Avg. crimes nearby | Median crimes nearby | Avg. safety index |
+|---|---|---|---|
+| London | 1954.31 | 1739.73 | 0.00093 |
+| New York City | 17.11 | 11.93 | 0.09293 |
+
+The large difference is a direct consequence of the far higher reporting density in the UKPD dataset (~79k events) versus the NYC sample (~400 events) used in analysis.
+
+### Correlations (price / rating vs. crime)
+
+| City | Price vs. crime | Rating vs. crime | Price vs. safety |
+|---|---|---|---|
+| London | +0.173 | +0.160 | −0.078 |
+| New York City | −0.099 | +0.053 | +0.084 |
+
+In London, pricier listings tend to cluster in central, high-crime areas. In NYC the opposite holds — higher prices correlate with safer surroundings.
+
+---
+
+## Tests
+
+All functional tests can be run independently:
+
+```bash
+# Spark pipeline integrity
+spark-submit tests/test_spark_pipeline.py
+
+# Hive external tables
+hive -f tests/hive_functional_tests.hql
+
+# HBase CRUD and schema
+python tests/hbase_test.py
+```
+
+All 8 Spark tests, 8 Hive tests, and 6 HBase tests pass (PASS) on the reference environment.
+
+---
+
+## HDFS Layout Reference
+
+```
+/user/<user>/bigdata/
+├── raw/
+│   ├── airbnb/
+│   ├── police_uk/
+│   └── police_nyc/
+├── processed/
+│   ├── airbnb_clean/
+│   ├── police_events/
+│   └── geo/
+└── analytical/
+    ├── agg_neighbourhood/
+    ├── agg_geohash/
+    └── reports/
+```
+
+---
+
+## HBase Schema Reference
+
+```
+Namespace : bigdata
+Table     : bigdata:police_events
+
+Column families:
+  cf_common  →  crime_type, latitude, longitude, timestamp
+  cf_uk      →  lsoa_code, reported_by, falls_within, ...
+  cf_nyc     →  pd_desc, law_cat_cd, arrest_boro, ...
+
+Row key format: YYYYMM_<geohash7>_<uuid>
+```
 
 ---
 
 ## Authors
 
-* 
-**Jan Cwalina** 
-
-
-* 
-**Mikołaj Guzik** 
-
-
-* 
-*Faculty of Mathematics and Information Science, Warsaw University of Technology*
+**Jan Cwalina** · **Mikołaj Guzik**  
+Faculty of Mathematics and Information Science, Warsaw University of Technology  
+Academic year 2025/2026
